@@ -1,6 +1,6 @@
 {
   "name": "foliobot-lambda",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "src/handler.js",
   "license": "MIT",
   "scripts": {
