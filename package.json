@@ -8,8 +8,7 @@
     "deploy": "set NODE_ENV=dev && yarn deploy:env",
     "deploy:production": "set NODE_ENV=production && yarn deploy:env",
     "deploy:stage": "set NODE_ENV=stage && yarn deploy:env",
-    "lint": "eslint ./src",
-    "precommit": "lint-staged",
+    "lint": "eslint ./src",    
     "serve": "serverless offline start",
     "tail:hello": "serverless logs --function hello --tail",
     "test": "jest --watch",
@@ -34,13 +33,20 @@
     "jest": "^22.0.4",
     "lint-staged": "^6.0.0",
     "serverless": "^1.5.1",
+    "serverless-dynamodb-local": "^0.2.28",
     "serverless-offline": "^3.16.0",
     "serverless-webpack": "^4.2.0",
     "webpack": "^3.6.0",
     "webpack-node-externals": "^1.5.4"
   },
   "dependencies": {
-    "babel-runtime": "^6.22.0"
+    "@jimdo/serverless-dotenv": "^1.0.0",
+    "aws-sdk": "^2.202.0",
+    "babel-runtime": "^6.22.0",
+    "express": "^4.16.2",
+    "serverless-http": "^1.5.3",
+    "telegra.ph": "^0.2.0",
+    "telegraf": "^3.18.0"
   },
   "lint-staged": {
     "src/**/*.js": [
