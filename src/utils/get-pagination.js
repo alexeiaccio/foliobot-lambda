@@ -9,7 +9,7 @@ const getPagination = ( query, maxpage ) => {
     const maxPage = parseInt(maxpage)
 
     if (maxPage>2) {
-      if (current==1) {
+      if (current === 1) {
         keysBottom.push( 
           Markup.urlButton('Web view', `http://telegra.ph/${path}`) 
         )
@@ -21,7 +21,7 @@ const getPagination = ( query, maxpage ) => {
       keysBottom.push( 
         Markup.callbackButton(`${current} · ${maxPage}`, `${path}:${current}`)
       )
-      if (current==maxPage) {
+      if (current === maxPage) {
         keysBottom.push( 
           Markup.switchToChatButton('Forward', path.toString()) 
         )
@@ -31,7 +31,7 @@ const getPagination = ( query, maxpage ) => {
         )
       }
     }
-    if (maxPage==2 && current==1) {
+    if (maxPage === 2 && current === 1) {
       keysTop.push( 
         Markup.urlButton('Web view', `http://telegra.ph/${path}`) 
       )
@@ -46,7 +46,7 @@ const getPagination = ( query, maxpage ) => {
         Markup.callbackButton('Next', `${path}:${current + 1}`) 
       )
     }
-    if (maxPage==2 && current==maxPage) {
+    if (maxPage === 2 && current === maxPage) {
       keysTop.push( 
         Markup.switchToChatButton('Forward', path.toString()) 
       )

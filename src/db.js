@@ -9,7 +9,6 @@ if (IS_OFFLINE === 'true') {
     region: 'localhost',
     endpoint: 'http://localhost:8000'
   })
-  console.log(dynamoDb.options.endpoint)
 } else {
   dynamoDb = new AWS.DynamoDB.DocumentClient()
 }

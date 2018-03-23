@@ -1,34 +1,44 @@
+const curry = require('folktale/core/lambda/curry')
+
+const isTag = curry(2, (list, tag) => list.some(elem => elem === tag))
+
 const filterTags = (tag) => {
-  if (tag === 'b' || tag === 'strong' || tag === 'i' || tag === 'em' || tag === 'a' || tag === 'code' || tag === 'pre') {
-    filteredTag = tag
-  } else if (tag === 'h3' || tag === 'h4') {
-    filteredTag = 'strong'
-  } else if (tag === 'li') {
-    filteredTag = 'em'
-  } else {
-    filteredTag = undefined
-  }
+  const telegramTags = ['b', 'strong', 'i', 'em', 'a', 'code', 'pre']  
+  const headerTags = ['h3', 'h4']  
+  const listTags = ['li']
+  let filteredTag
+  isTag(telegramTags, tag)  ? filteredTag = tag
+: isTag(headerTags, tag)    ? filteredTag = 'strong'
+: isTag(listTags, tag)      ? filteredTag = 'em'
+: /* otherwise */             filteredTag = undefined
   return filteredTag
 }
 
 const clearContent = (content) => {  
-  const includedRegExp = /[<.+?>.+?](<.+?>)(.+?)(<\/.+?>)[.+?<\/.+?>]/g  
-  const replacer = (str, first, second, third, offset, s) => `>${second}<`
-
+  const includedRegExp = /[<.+?>.+?](<.+?>)(.+?)(<\/.+?>)[.+?</.+?>]/g  
+  const replacer = (str, first, second) => `>${second}<`
   return content
     .replace(includedRegExp,  replacer)
     .replace(/(\n)+/g , '\n')
 }
 
 const parseContent = (children) => {
+  const paragraphTags = ['h3', 'h4', 'li'] 
   let parsed = ''
   children.map(node => {    
     const tag = filterTags(node.tag)
     if (node.children) {      
-      node.tag && tag !== undefined ?
-        parsed += `<${tag}${node.attrs && node.attrs.href ? ` href=${  node.attrs.href}` : ''}>${parseContent(node.children)}</${tag}>${node.tag === 'li' || node.tag === 'h3' || node.tag === 'h4' ? '\n' : ''}` :
+      if(tag && tag !== undefined) {
+        parsed += `<${tag}${node.attrs && node.attrs.href ? ` href=${node.attrs.href}` : ''}>${parseContent(node.children)}</${tag}>${isTag(paragraphTags, tag) ? '\n' : ''}`
+      } else {
         parsed += `${parseContent(node.children)}\n`
-    } else node.tag ? parsed += '' : parsed += node
+      }
+    } else if(node.tag) {
+      parsed += ''
+    } else {
+      parsed += node
+    }
+    return parsed
   })
   return parsed
 }
@@ -38,13 +48,16 @@ const getContent = (content) => (clearContent(parseContent([{'tag': 'div', 'chil
 const findBreakTag = (str) => {
   const endRegExp = /(<(\/??)(\w+)[\s.*]?>)[^>]*?$/gm
   const startRegExp = /^.*?[^<]?(<(\/??)(\w+).*?>)/gm
-  matchEnd = endRegExp.exec(str)
-  matchStart = startRegExp.exec(str)
+  const matchEnd = endRegExp.exec(str)
+  const matchStart = startRegExp.exec(str) 
+  let newStr = str
   if (matchEnd !== null || matchStart !== null) {
-    if (matchEnd[2] !== '/') str += `</${matchEnd[3]}>`
-    if (matchStart[2] === '/') str = `<${matchStart[3]}>${  str}`
+    if (matchEnd[2] !== '/')
+      newStr += `</${matchEnd[3]}>`    
+    if (matchStart[2] === '/')
+      newStr = `<${matchStart[3]}>${str}`
   }
-  return str
+  return newStr
 }
 
 const getMaxPage = (text) => (Math.floor(text.split('').length / 600))
@@ -52,10 +65,9 @@ const getMaxPage = (text) => (Math.floor(text.split('').length / 600))
 const getParts = (text) => {
   const parts = []
   const wordArray = text.split(' ')
-  const letterCount = text.split('').length
   const partsCount = getMaxPage(text)  
   const count = wordArray.length / partsCount
-  for (let i = 0; i <= partsCount; i++) {
+  for (let i = 0; i <= partsCount; i += 1) {
     const part = wordArray
       .slice( i < 1 ? 0 : count*(i), count*(i + 1))
       .join(' ')
