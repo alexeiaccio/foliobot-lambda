@@ -113,8 +113,8 @@ const inlineQueryHandler = ({ inlineQuery, answerInlineQuery }) => {
     
     const telegraphContent = getPageExecution(path)
 
-    telegraphContent.map(x => {console.log(x); return x}).map(result => 
-      checkResult(result)
+    telegraphContent.map(value => 
+      checkResult(value)
         .matchWith({
           Ok:    ({ value }) => answerInlineQueryHandle(answerInlineQuery, path, current, value.result),
           Error: ({ value }) => errorHandle(answerInlineQuery, value)
