@@ -1,12 +1,27 @@
-const Telegraph = require('telegra.ph')
 const Router = require('telegraf/router')
 const options = require('../options')
 const dynamoDb = require('../db')
 const getPages = require('../utils/text-helpers')
 const getPagination = require('../utils/get-pagination')
 const getOptions = require('../utils/get-options')
+import fetch from 'isomorphic-fetch'
+import { fromPromised } from 'folktale/concurrency/task'
+import Result from 'folktale/result'
 
-const client = new Telegraph()
+const fetchPage = path => 
+  fetch(`https://api.telegra.ph/getPage?path=${path}&return_content=true`)
+    .then(res => res.json())
+
+const getPageTask = fromPromised(fetchPage)
+const getPageExecution = (path) => getPageTask(path)
+  .run()
+  .future()
+  .listen({
+    onCancelled: () => console.log('getPageExecution was cancelled'),
+    onRejected:  (reason) => console.log(`Fetch error: ${reason}`),
+    onResolved:  (value) => value
+  })
+
 const PAGES_TABLE = process.env.PAGES_TABLE
 
 const callbackQueryHandler = new Router(({ callbackQuery }) => {
@@ -69,9 +84,9 @@ callbackQueryHandler.on('turn', (ctx) => {
       getCallbackAnswer(ctx, pageId, maxPage, content, currentPage)
     } else {
       console.log(`Error after get: ${  error}`)
-      client.getPage(statePath, true)
-      .then(page => {
-        const pages = getPages(page.content)
+      getPageExecution(statePath)
+      .map(page => {
+        const pages = getPages(page.result.content)
         const maxPage = pages.length
         pages.forEach(page => {
           const params = {

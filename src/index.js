@@ -16,13 +16,14 @@ app.get('/', (req, res) => {
 })
 
 bot.use(
+  require('./commands'),
   require('./handlers')
 )
 
 if (IS_OFFLINE === 'true') {
   bot.startPolling()
 } else {
-  bot.telegram.setWebhook(`${process.env.WEBHOOK_URL  }/secret-path`)  
+  bot.telegram.setWebhook(`${process.env.WEBHOOK_URL}/secret-path`)  
   app.use(bot.webhookCallback('/secret-path'))
 }
 

@@ -5,6 +5,7 @@ const getPagination = require('../utils/get-pagination')
 import fetch from 'isomorphic-fetch'
 import { fromPromised } from 'folktale/concurrency/task'
 import Result from 'folktale/result'
+const curry = require('folktale/core/lambda/curry')
 
 const fetchPage = path => 
   fetch(`https://api.telegra.ph/getPage?path=${path}&return_content=true`)
@@ -25,7 +26,7 @@ const getPageExecution = (path) => getPageTask(path)
     onResolved:  (value) => value
   })
 
-const savePage = (pages) => {
+const savePageInDb = curry(2, (path, pages) => {
   const PAGES_TABLE = process.env.PAGES_TABLE
   const maxPage = pages.length
   pages.forEach(page => {
@@ -44,13 +45,13 @@ const savePage = (pages) => {
       console.log(`Success! Id: ${  params.Item.pageId}`)
     })
   })
-}
+})
 
-const answerInlineQueryHandle = (answerInlineQuery, path, current, result) => {
+const answerInlineQueryHandle = curry(4, (answerInlineQuery, path, current, result) => {
   const pages = getPages(result.content)
   const maxPage = pages.length
 
-  savePage(pages)
+  savePageInDb(path, pages)
   
   return answerInlineQuery(
     [{
@@ -68,10 +69,10 @@ const answerInlineQueryHandle = (answerInlineQuery, path, current, result) => {
     {
       cache_time: 800
     }
-  )
-}
+  ).catch(err => console.log(err), undefined)
+})
 
-const errorHandle = (answerInlineQuery, err) => {
+const errorHandle = curry(2, (answerInlineQuery, err) => {
   const title = 'Oops...'
   const description = err
   return answerInlineQuery(
@@ -89,7 +90,7 @@ const errorHandle = (answerInlineQuery, err) => {
       cache_time: 200
     }
   )      
-}
+})
 
 const getPath = (query) => {
   let path = ''
@@ -98,7 +99,7 @@ const getPath = (query) => {
     const pathRegExp = /(?:http:\/\/telegra.ph\/)(.*)/g
     path = pathRegExp.exec(query)[1]
   } else if (query.indexOf(':')>=0) {
-    const parts = inlineQuery.query.split(':')
+    const parts = query.split(':')
     current = parseInt(parts[1]) || 1
     path = parts[0]
   } else path = query
@@ -106,18 +107,18 @@ const getPath = (query) => {
 }
 
 const inlineQueryHandler = ({ inlineQuery, answerInlineQuery }) => {
-  const query = inlineQuery.query  
-
+  const query = inlineQuery.query
   if(query.length > 1) {
-    const { path, current } = getPath(query)
-    
+    const { path, current } = getPath(query)    
     const telegraphContent = getPageExecution(path)
+    const makeAnswer = answerInlineQueryHandle(answerInlineQuery, path, current)
+    const makeError = errorHandle(answerInlineQuery)
 
     telegraphContent.map(value => 
       checkResult(value)
         .matchWith({
-          Ok:    ({ value }) => answerInlineQueryHandle(answerInlineQuery, path, current, value.result),
-          Error: ({ value }) => errorHandle(answerInlineQuery, value)
+          Ok:    ({ value }) => makeAnswer(value.result),
+          Error: ({ value }) => makeError(value)
         })
     )
   }
