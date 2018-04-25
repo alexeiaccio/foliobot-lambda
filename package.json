@@ -43,9 +43,11 @@
     "@jimdo/serverless-dotenv": "^1.0.0",
     "aws-sdk": "^2.202.0",
     "babel-runtime": "^6.22.0",
+    "es6-promise": "^4.2.4",
     "express": "^4.16.2",
     "folktale": "^2.1.0",
     "isomorphic-fetch": "^2.2.1",
+    "request": "^2.85.0",
     "serverless-http": "^1.5.3",
     "telegra.ph": "^0.2.0",
     "telegraf": "^3.18.0"

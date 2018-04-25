@@ -4,7 +4,8 @@ const dynamoDb = require('../db')
 const getPages = require('../utils/text-helpers')
 const getPagination = require('../utils/get-pagination')
 const getOptions = require('../utils/get-options')
-import fetch from 'isomorphic-fetch'
+require('es6-promise').polyfill()
+require('isomorphic-fetch')
 import { fromPromised } from 'folktale/concurrency/task'
 import Result from 'folktale/result'
 
@@ -25,6 +26,7 @@ const getPageExecution = (path) => getPageTask(path)
 const PAGES_TABLE = process.env.PAGES_TABLE
 
 const callbackQueryHandler = new Router(({ callbackQuery }) => {
+  console.log(`Query is ${callbackQuery.data}`)
   if (!callbackQuery.data) {
     return
   }

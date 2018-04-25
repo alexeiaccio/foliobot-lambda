@@ -29,7 +29,7 @@ const parseContent = (children) => {
     const tag = filterTags(node.tag)
     if (node.children) {      
       if(tag && tag !== undefined) {
-        parsed += `<${tag}${node.attrs && node.attrs.href ? ` href=${node.attrs.href}` : ''}>${parseContent(node.children)}</${tag}>${isTag(paragraphTags, tag) ? '\n' : ''}`
+        parsed += `<${tag}${node.attrs && node.attrs.href ? ` href="${node.attrs.href}"` : ''}>${parseContent(node.children)}</${tag}>${isTag(paragraphTags, tag) ? '\n' : ''}`
       } else {
         parsed += `${parseContent(node.children)}\n`
       }
